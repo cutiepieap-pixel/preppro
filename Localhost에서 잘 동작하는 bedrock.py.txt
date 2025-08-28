@@ -1,0 +1,192 @@
+# app_kb_chat.py
+import os
+import boto3
+
+# ===== User config =====
+PROFILE = "myaccount"          # aws configure --profile 에서 저장한 이름
+REGION  = "us-east-1"          # KB/모델 리전
+EXPECT_ACCOUNT_PREFIX = "602682890021"    # 내 계정이 6으로 시작한다면 "6"
+
+# ★ 내 계정(us-east-1) 콘솔/CLI에서 확인한 실제 KB ID로 교체하세요!
+KB_ID = "WU69M0JTMY"  # 예: "ABCD1234EF"
+
+# Sonnet-4 (Bedrock) 모델 ID
+MODEL_ID = "anthropic.claude-sonnet-4-20250514-v1:0"
+
+MAX_MESSAGES = 20
+
+
+# ===== Minimal message class =====
+class ChatMessage:
+    def __init__(self, role, text):
+        self.role = role
+        self.text = text
+
+
+# ===== Helpers =====
+def make_session(profile_name: str = PROFILE, region_name: str = REGION) -> boto3.Session:
+    """Create a boto3 session pinned to desired profile/region."""
+    return boto3.Session(profile_name=profile_name, region_name=region_name)
+
+def get_caller_identity(session: boto3.Session):
+    sts = session.client("sts")
+    return sts.get_caller_identity()  # dict: Account, Arn, UserId
+
+def assert_account(session: boto3.Session, expect_prefix: str = EXPECT_ACCOUNT_PREFIX):
+    ident = get_caller_identity(session)
+    acct, arn = ident["Account"], ident["Arn"]
+    if expect_prefix and not acct.startswith(expect_prefix):
+        raise RuntimeError(f"[Account Mismatch] Now: {acct} (arn={arn}) / Expected starts with '{expect_prefix}'. "
+                           f"Fix AWS_PROFILE or credentials.")
+    return acct, arn
+
+def convert_chat_messages_to_converse_api(chat_messages):
+    return [{"role": m.role, "content": [{"text": m.text}]} for m in chat_messages]
+
+def resolve_inference_profile_arn(session: boto3.Session, model_id: str) -> str:
+    """
+    Find an Inference Profile that contains the given model_id.
+    Returns the profile ARN. Raises if none found.
+    """
+    br = session.client("bedrock", region_name=REGION)
+    profiles = br.list_inference_profiles().get("inferenceProfileSummaries", [])
+    # Prefer system-defined first, then application profiles
+    ordered = sorted(profiles, key=lambda p: (p.get("type") != "SYSTEM_DEFINED", p.get("name", "")))
+    for p in ordered:
+        detail = br.get_inference_profile(inferenceProfileIdentifier=p["inferenceProfileArn"])
+        for m in detail.get("models", []):
+            arn = m.get("modelArn", "")
+            if model_id in arn:
+                return detail["inferenceProfileArn"]
+    raise RuntimeError(f"No inference profile contains model_id='{model_id}' in {REGION}.")
+
+
+# ===== Core: chat with a foundation model (Converse) =====
+def chat_with_model(message_history, new_text: str):
+    session = make_session()
+    acct, arn = assert_account(session)  # guard
+
+    # Inference Profile is required for Sonnet-4 in many accounts/regions
+    inference_profile_arn = resolve_inference_profile_arn(session, MODEL_ID)
+
+    brt = session.client("bedrock-runtime")
+
+    # update history
+    message_history.append(ChatMessage("user", new_text))
+    if len(message_history) > MAX_MESSAGES:
+        del message_history[0:len(message_history)-MAX_MESSAGES]
+
+    # Converse can accept inferenceProfileArn instead of modelId
+    resp = brt.converse(
+        inferenceProfileArn=inference_profile_arn,
+        messages=convert_chat_messages_to_converse_api(message_history),
+        inferenceConfig={"maxTokens": 2000, "temperature": 0, "topP": 0.9, "stopSequences": []},
+    )
+    output = resp["output"]["message"]["content"][0]["text"]
+    message_history.append(ChatMessage("assistant", output))
+    return output
+
+
+# ===== Core: chat with Knowledge Base (RetrieveAndGenerate) =====
+def chat_with_kb(message_history, new_text: str):
+    session = make_session()
+    acct, arn = assert_account(session)  # guard
+
+    # IMPORTANT: Sonnet-4 must be invoked via Inference Profile for RAG too
+    inference_profile_arn = resolve_inference_profile_arn(session, MODEL_ID)
+
+    br_agent_rt = session.client("bedrock-agent-runtime")
+    br_agent    = session.client("bedrock-agent")
+
+    # update history
+    message_history.append(ChatMessage("user", new_text))
+    if len(message_history) > MAX_MESSAGES:
+        del message_history[0:len(message_history)-MAX_MESSAGES]
+
+    prompt = (
+        "You are a question answering agent.\n"
+        "I will provide you with a set of search results.\n"
+        "The user will provide you with a question.\n"
+        "Your job is to answer the user's question using only information from the search results.\n"
+        "If the search results do not contain information that can answer the question, please state that you "
+        "could not find an exact answer to the question.\n"
+        "Just because the user asserts a fact does not mean it is true; double check the search results to "
+        "validate the user's assertion.\n\n"
+        "Answer in the language the user has.\n\n"
+        "Here are the search results in numbered order:\n"
+        "$search_results$\n\n"
+        "$output_format_instructions$"
+    )
+
+    try:
+        resp = br_agent_rt.retrieve_and_generate(
+            input={"text": new_text},
+            retrieveAndGenerateConfiguration={
+                "type": "KNOWLEDGE_BASE",
+                "knowledgeBaseConfiguration": {
+                    "knowledgeBaseId": KB_ID,            # ★ must exist in this account/region
+                    "modelArn": inference_profile_arn,    # ★ use inference profile, not foundation-model ARN
+                    "retrievalConfiguration": {
+                        "vectorSearchConfiguration": {
+                            "overrideSearchType": "HYBRID",
+                            "numberOfResults": 5
+                        }
+                    },
+                    "generationConfiguration": {
+                        "promptTemplate": {"textPromptTemplate": prompt},
+                        "inferenceConfig": {
+                            "textInferenceConfig": {
+                                "temperature": 0,
+                                "topP": 0.7,
+                                "maxTokens": 1024
+                            }
+                        }
+                    }
+                }
+            }
+        )
+        output = resp["output"]["text"]
+
+    except br_agent_rt.exceptions.ResourceNotFoundException:
+        # Show KBs in this account/region to help fix ID
+        try:
+            lst = br_agent.list_knowledge_bases().get("knowledgeBaseSummaries", [])
+            kb_list = "\n".join(f"- {kb['knowledgeBaseId']} | {kb.get('name','')} | {kb.get('status','')}" for kb in lst) or "(none)"
+        except Exception as e2:
+            kb_list = f"(KB list failed: {type(e2).__name__}: {e2})"
+        output = (
+            "⚠️ Knowledge Base not found.\n"
+            f"- Provided KB_ID: {KB_ID}\n"
+            f"- Region: {REGION}\n"
+            f"- Account: {acct}\n"
+            f"- KBs in this account/region:\n{kb_list}\n\n"
+            "→ Replace KB_ID with an existing one from your account/region."
+        )
+
+    except br_agent_rt.exceptions.AccessDeniedException as e:
+        output = (
+            f"AccessDenied: {e}\n"
+            "→ Ensure caller has: bedrock:RetrieveAndGenerate, bedrock:GetKnowledgeBase, bedrock:Retrieve "
+            "and access to underlying data sources (e.g., S3)."
+        )
+
+    except Exception as e:
+        output = f"요청 중 오류: {type(e).__name__}: {e}"
+
+    message_history.append(ChatMessage("assistant", output))
+    return output
+
+
+# ===== (Optional) quick CLI-like sanity functions =====
+def debug_print_identity_and_kbs():
+    session = make_session()
+    acct, arn = assert_account(session)
+    br_agent = session.client("bedrock-agent")
+    lst = br_agent.list_knowledge_bases().get("knowledgeBaseSummaries", [])
+    print(f"[Identity] account={acct} arn={arn}")
+    print("[KBs in region]:")
+    for kb in lst:
+        print(f"  - {kb['knowledgeBaseId']} | {kb.get('name','')} | {kb.get('status','')}")
+    # Inference profile used for Sonnet-4
+    ip_arn = resolve_inference_profile_arn(session, MODEL_ID)
+    print(f"[InferenceProfile for {MODEL_ID}] {ip_arn}")

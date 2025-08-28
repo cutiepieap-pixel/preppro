@@ -1,0 +1,16 @@
+version: 1.0
+runtime: python3
+build:
+  commands:
+    build:
+      - echo "Installing dependencies"
+      - python3 -m pip install --upgrade pip setuptools wheel && python3 -m pip install --no-cache-dir -r requirements.txt --target=/app/.python_packages/lib/site-packages
+run:
+  runtime-version: 3.11
+  command: streamlit run test-app.py --server.port 8080 --server.address 0.0.0.0 --server.headless true --server.enableCORS false --server.enableXsrfProtection false
+  network:
+    port: 8080
+    env: PORT
+  env:
+    - name: PORT
+      value: "8080"
