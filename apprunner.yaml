@@ -3,11 +3,10 @@ runtime: python3
 build:
   commands:
     build:
-      - python -m pip install --upgrade pip setuptools wheel
-      - python -m pip install --no-cache-dir -r requirements.txt
+      - pip install -r requirements.txt
 run:
   runtime-version: 3.11
-  command: python -m streamlit run minimal-test.py --server.address 0.0.0.0 --server.port 8080 --server.headless true --server.enableCORS false --server.enableXsrfProtection false --browser.gatherUsageStats false --server.fileWatcherType none
+  command: python app.py
   network:
     port: 8080
     env: PORT
