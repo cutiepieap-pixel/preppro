@@ -162,24 +162,35 @@ st.markdown("Ask questions and get answers from our knowledge base powered by AW
 if 'chat_history' not in st.session_state:
     st.session_state.chat_history = []
 
-# Chat input
-input_text = st.chat_input("Chat with your bot here")
+# Create a container for the chat interface
+with st.container():
+    st.subheader("💭 Ask Your Question")
+    st.markdown("Type your question in the chat box below and press Enter to get an AI-powered answer:")
+    
+    # Chat input with clear instructions
+    input_text = st.chat_input("💬 Type your question here and press Enter...")
 
-if input_text:
-    # Call the chat function
-    chat_with_kb(message_history=st.session_state.chat_history, new_text=input_text)
+    if input_text:
+        # Call the chat function
+        chat_with_kb(message_history=st.session_state.chat_history, new_text=input_text)
 
-# Render chat history
-for message in st.session_state.chat_history:
-    with st.chat_message(message.role):
-        st.markdown(message.text)
-
-# Clear chat button
-col1, col2 = st.columns([1, 4])
-with col1:
-    if st.button("🗑️ Clear Chat"):
-        st.session_state.chat_history = []
-        st.rerun()
+# Chat history section
+if st.session_state.chat_history:
+    st.subheader("📝 Conversation History")
+    
+    # Render chat history
+    for message in st.session_state.chat_history:
+        with st.chat_message(message.role):
+            st.markdown(message.text)
+    
+    # Clear chat button
+    col1, col2, col3 = st.columns([1, 1, 3])
+    with col1:
+        if st.button("🗑️ Clear Chat"):
+            st.session_state.chat_history = []
+            st.rerun()
+else:
+    st.info("👋 Start a conversation by typing your question in the chat box above!")
 
 st.markdown("---")
 
