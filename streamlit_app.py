@@ -88,8 +88,8 @@ def chat_with_kb(message_history, new_text=None):
                         },
                         "inferenceConfig": {
                             "textInferenceConfig": {
-                                "temperature": 0,
-                                "topP": 0.7,
+                                "temperature": 0.7,
+                                "topP": 0.9,
                                 "maxTokens": 4096,
                                 "stopSequences": ["\nObservation"]
                             }
