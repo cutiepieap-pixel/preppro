@@ -42,7 +42,7 @@ def chat_with_kb(message_history, new_text=None):
     try:
         bedrock = boto3.client('bedrock-agent-runtime', region_name=aws_region)
         
-        llm_model = "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-5-sonnet-20241022-v2:0"
+        llm_model = "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-5-sonnet-20240620-v1:0"
         chunk = 5
         
         prompt = '''You are a question answering agent. 
