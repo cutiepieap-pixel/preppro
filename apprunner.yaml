@@ -7,7 +7,7 @@ build:
       - python3 -m pip install --no-cache-dir -r requirements.txt --target=/app/.python_packages/lib/site-packages
 run:
   runtime-version: 3.11
-  command: python3 flask_app.py
+  command: python3 simple_http_server.py
   network:
     port: 8080
     env: PORT

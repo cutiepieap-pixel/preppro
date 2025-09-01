@@ -120,137 +120,130 @@ st.set_page_config(
 
 # Main title
 st.title("🧪 PrepPro Application")
+st.markdown("Welcome to PrepPro - Your AI-powered knowledge base assistant")
 st.markdown("---")
 
-# Sidebar for navigation
-st.sidebar.title("Navigation")
-page = st.sidebar.selectbox("Choose a section:", ["Main App", "Knowledge Base Chat", "Disclaimer", "FAQ"])
+# CHAT SECTION
+st.header("💬 Knowledge Base Chat")
+st.markdown("Ask questions and get answers from our knowledge base powered by AWS Bedrock.")
 
-if page == "Main App":
-    st.header("Welcome to PrepPro")
-    st.write("This is your main application area.")
-    
-    # Add your main app functionality here
-    st.info("💡 Add your main Streamlit app code in this section")
-    
-    # Example functionality
-    user_input = st.text_input("Enter some text:")
-    if user_input:
-        st.success(f"You entered: {user_input}")
+# Initialize chat history in session state (matching your localhost code)
+if 'chat_history' not in st.session_state:
+    st.session_state.chat_history = []
 
-elif page == "Knowledge Base Chat":
-    st.header("💬 Knowledge Base Chat")
-    st.markdown("Ask questions and get answers from our knowledge base powered by AWS Bedrock.")
-    
-    # Initialize chat history in session state (matching your localhost code)
-    if 'chat_history' not in st.session_state:
-        st.session_state.chat_history = []
-    
-    # Chat input (matching your localhost code)
-    input_text = st.chat_input("Chat with your bot here")
-    
-    if input_text:
-        # Call the chat function (matching your localhost code)
-        chat_with_kb(message_history=st.session_state.chat_history, new_text=input_text)
-    
-    # Render chat history (matching your localhost code)
-    for message in st.session_state.chat_history:
-        with st.chat_message(message.role):
-            st.markdown(message.text)
-    
-    # Clear chat button
-    if st.button("🗑️ Clear Chat History"):
+# Chat input (matching your localhost code)
+input_text = st.chat_input("Chat with your bot here")
+
+if input_text:
+    # Call the chat function (matching your localhost code)
+    chat_with_kb(message_history=st.session_state.chat_history, new_text=input_text)
+
+# Render chat history (matching your localhost code)
+for message in st.session_state.chat_history:
+    with st.chat_message(message.role):
+        st.markdown(message.text)
+
+# Clear chat button
+col1, col2 = st.columns([1, 4])
+with col1:
+    if st.button("🗑️ Clear Chat"):
         st.session_state.chat_history = []
         st.rerun()
-    
-    # Configuration info
-    with st.expander("ℹ️ Configuration Info"):
-        st.write("**AWS Region:**", os.getenv("AWS_REGION", "us-east-1"))
-        st.write("**KB ID:**", os.getenv("KB_ID", "Not configured"))
-        if not os.getenv("KB_ID"):
-            st.warning("⚠️ Knowledge Base ID (KB_ID) is not configured. Please set up your environment variables.")
 
-elif page == "Disclaimer":
-    st.header("⚠️ Disclaimer")
-    
-    st.markdown("""
-    ### Important Notice
-    
-    **Please read this disclaimer carefully before using this application.**
-    
-    #### Usage Terms
-    - This application is provided for educational and demonstration purposes only
-    - Users are responsible for ensuring compliance with applicable laws and regulations
-    - The application may contain experimental features that are subject to change
-    
-    #### Data Privacy
-    - We do not store personal information beyond the current session
-    - Any data entered is processed temporarily and not permanently stored
-    - Users should not enter sensitive or confidential information
-    
-    #### Limitations
-    - This application is provided "as is" without warranties of any kind
-    - We are not responsible for any decisions made based on the application's output
-    - Results should be verified independently before making important decisions
-    
-    #### Contact
-    - For questions or concerns, please contact the development team
-    - Report any issues or bugs through the appropriate channels
-    
-    **By using this application, you acknowledge that you have read and understood this disclaimer.**
+# Configuration info
+with st.expander("ℹ️ Configuration Info"):
+    st.write("**AWS Region:**", os.getenv("AWS_REGION", "us-east-1"))
+    st.write("**KB ID:**", os.getenv("KB_ID", "Not configured"))
+    if not os.getenv("KB_ID"):
+        st.warning("⚠️ Knowledge Base ID (KB_ID) is not configured. Please set up your environment variables.")
+
+st.markdown("---")
+
+# DISCLAIMER SECTION
+st.header("⚠️ Disclaimer")
+
+st.markdown("""
+### Important Notice
+
+**Please read this disclaimer carefully before using this application.**
+
+#### Usage Terms
+- This application is provided for educational and demonstration purposes only
+- Users are responsible for ensuring compliance with applicable laws and regulations
+- The application may contain experimental features that are subject to change
+
+#### Data Privacy
+- We do not store personal information beyond the current session
+- Any data entered is processed temporarily and not permanently stored
+- Users should not enter sensitive or confidential information
+
+#### Limitations
+- This application is provided "as is" without warranties of any kind
+- We are not responsible for any decisions made based on the application's output
+- Results should be verified independently before making important decisions
+
+#### Contact
+- For questions or concerns, please contact the development team
+- Report any issues or bugs through the appropriate channels
+
+**By using this application, you acknowledge that you have read and understood this disclaimer.**
+""")
+
+st.markdown("---")
+
+# FAQ SECTION
+st.header("❓ Frequently Asked Questions")
+
+# FAQ Section with expandable items
+with st.expander("🔍 What is PrepPro?"):
+    st.write("""
+    PrepPro is a demonstration application built with Streamlit. It showcases various 
+    features and capabilities for educational purposes.
     """)
 
-elif page == "FAQ":
-    st.header("❓ Frequently Asked Questions")
-    
-    # FAQ Section with expandable items
-    with st.expander("🔍 What is PrepPro?"):
-        st.write("""
-        PrepPro is a demonstration application built with Streamlit. It showcases various 
-        features and capabilities for educational purposes.
-        """)
-    
-    with st.expander("🚀 How do I get started?"):
-        st.write("""
-        1. Navigate to the "Main App" section using the sidebar
-        2. Follow the on-screen instructions
-        3. Enter your data in the provided fields
-        4. Review the results and outputs
-        """)
-    
-    with st.expander("💾 Is my data saved?"):
-        st.write("""
-        No, this application does not permanently store any data you enter. 
-        All information is processed in real-time and cleared when you close the session.
-        """)
-    
-    with st.expander("🔧 What technologies are used?"):
-        st.write("""
-        - **Frontend**: Streamlit
-        - **Backend**: Python
-        - **Hosting**: Streamlit Community Cloud
-        - **Version Control**: GitHub
-        """)
-    
-    with st.expander("📱 Is this mobile-friendly?"):
-        st.write("""
-        Yes! Streamlit applications are responsive and work well on mobile devices, 
-        tablets, and desktop computers.
-        """)
-    
-    with st.expander("🐛 How do I report bugs?"):
-        st.write("""
-        If you encounter any issues:
-        1. Note the steps that led to the problem
-        2. Take a screenshot if possible
-        3. Contact the development team with details
-        """)
-    
-    with st.expander("🔄 How often is this updated?"):
-        st.write("""
-        The application is updated regularly with new features and bug fixes. 
-        Check back periodically for the latest version.
-        """)
+with st.expander("🚀 How do I get started?"):
+    st.write("""
+    1. Type your question in the chat box above
+    2. Wait for the AI to respond using our knowledge base
+    3. Continue the conversation as needed
+    4. Use the clear button to start a new conversation
+    """)
+
+with st.expander("💾 Is my data saved?"):
+    st.write("""
+    No, this application does not permanently store any data you enter. 
+    All information is processed in real-time and cleared when you close the session.
+    """)
+
+with st.expander("🔧 What technologies are used?"):
+    st.write("""
+    - **Frontend**: Streamlit
+    - **Backend**: Python
+    - **AI**: AWS Bedrock with Claude 3.5 Sonnet
+    - **Knowledge Base**: AWS Bedrock Knowledge Base
+    - **Hosting**: Streamlit Community Cloud
+    - **Version Control**: GitHub
+    """)
+
+with st.expander("📱 Is this mobile-friendly?"):
+    st.write("""
+    Yes! Streamlit applications are responsive and work well on mobile devices, 
+    tablets, and desktop computers.
+    """)
+
+with st.expander("🐛 How do I report bugs?"):
+    st.write("""
+    If you encounter any issues:
+    1. Note the steps that led to the problem
+    2. Take a screenshot if possible
+    3. Contact the development team with details
+    """)
+
+with st.expander("🔄 How often is this updated?"):
+    st.write("""
+    The application is updated regularly with new features and bug fixes. 
+    Check back periodically for the latest version.
+    """)
 
 # Footer
 st.markdown("---")
