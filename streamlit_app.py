@@ -194,8 +194,12 @@ if st.session_state.chat_history:
     
     # Render chat history
     for message in st.session_state.chat_history:
-        with st.chat_message(message.role):
-            st.markdown(message.text)
+        if message.role == "user":
+            with st.container():
+                st.markdown(f"**🧑 You:** {message.text}")
+        else:
+            with st.container():
+                st.markdown(f"**🤖 PrepPro:** {message.text}")
     
     # Clear chat button
     col1, col2, col3 = st.columns([1, 1, 3])
