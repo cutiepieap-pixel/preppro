@@ -143,19 +143,19 @@ def chat_with_kb(message_history, new_text=None):
 
 # Page configuration
 st.set_page_config(
-    page_title="PrepPro App",
+    page_title="PrepPro"
     page_icon="🧪",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 # Main title
-st.title("🧪 PrepPro Application")
-st.markdown("Welcome to PrepPro - Your AI-powered knowledge base assistant")
+st.title("🧪 PrepPro - Your AI Amazon Interview Assistant")
+st.markdown("Welcome to PrepPro - Your trusted Amazon Interview AI assistant")
 st.markdown("---")
 
 # CHAT SECTION  
-st.header("💬 Knowledge Base Chat")
+st.header("💬 Chat with PrepPro")
 st.markdown("Ask questions and get answers from our knowledge base powered by AWS Bedrock.")
 
 # Initialize chat history in session state
