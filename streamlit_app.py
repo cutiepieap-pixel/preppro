@@ -26,6 +26,9 @@ def convert_chat_messages_to_converse_api(chat_messages):
     return messages
 
 def chat_with_kb(message_history, new_text=None):
+    import time
+    import random
+    
     try:
         from dotenv import load_dotenv
         load_dotenv()
@@ -38,6 +41,21 @@ def chat_with_kb(message_history, new_text=None):
     if not kbId:
         st.error(f"KB_ID environment variable is not set. Please configure your AWS credentials and KB_ID.")
         return "Sorry, the knowledge base is not configured properly."
+    
+    # Rate limiting check
+    if 'last_request_time' not in st.session_state:
+        st.session_state.last_request_time = 0
+    
+    current_time = time.time()
+    time_since_last = current_time - st.session_state.last_request_time
+    
+    # Enforce minimum 2 seconds between requests
+    if time_since_last < 2:
+        wait_time = 2 - time_since_last
+        st.warning(f"⏳ Please wait {wait_time:.1f} seconds before sending another message...")
+        time.sleep(wait_time)
+    
+    st.session_state.last_request_time = time.time()
     
     try:
         bedrock = boto3.client('bedrock-agent-runtime', region_name=aws_region)
@@ -66,38 +84,51 @@ def chat_with_kb(message_history, new_text=None):
         
         if number_of_messages > MAX_MESSAGES:
             del message_history[0 : (number_of_messages - MAX_MESSAGES) * 2]
-            
-        response = bedrock.retrieve_and_generate(
-            input={
-                'text': new_text
-            },
-            retrieveAndGenerateConfiguration={
-                "type": "KNOWLEDGE_BASE",
-                "knowledgeBaseConfiguration": {
-                    "knowledgeBaseId": kbId,
-                    "modelArn": llm_model,
-                    "retrievalConfiguration": {
-                        "vectorSearchConfiguration": {
-                            "overrideSearchType": "HYBRID",
-                            "numberOfResults": chunk
-                        }
+        
+        # Retry logic for throttling
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                response = bedrock.retrieve_and_generate(
+                    input={
+                        'text': new_text
                     },
-                    "generationConfiguration": {
-                        "promptTemplate": {
-                            "textPromptTemplate": prompt
-                        },
-                        "inferenceConfig": {
-                            "textInferenceConfig": {
-                                "temperature": 0.7,
-                                "topP": 0.9,
-                                "maxTokens": 4096,
-                                "stopSequences": ["\nObservation"]
+                    retrieveAndGenerateConfiguration={
+                        "type": "KNOWLEDGE_BASE",
+                        "knowledgeBaseConfiguration": {
+                            "knowledgeBaseId": kbId,
+                            "modelArn": llm_model,
+                            "retrievalConfiguration": {
+                                "vectorSearchConfiguration": {
+                                    "overrideSearchType": "HYBRID",
+                                    "numberOfResults": chunk
+                                }
+                            },
+                            "generationConfiguration": {
+                                "promptTemplate": {
+                                    "textPromptTemplate": prompt
+                                },
+                                "inferenceConfig": {
+                                    "textInferenceConfig": {
+                                        "temperature": 0.7,
+                                        "topP": 0.9,
+                                        "maxTokens": 4096,
+                                        "stopSequences": ["\nObservation"]
+                                    }
+                                }
                             }
                         }
                     }
-                }
-            }
-        )
+                )
+                break  # Success, exit retry loop
+                
+            except Exception as retry_error:
+                if "ThrottlingException" in str(retry_error) and attempt < max_retries - 1:
+                    wait_time = (2 ** attempt) + random.uniform(0, 1)  # Exponential backoff
+                    st.warning(f"⏳ Rate limited. Retrying in {wait_time:.1f} seconds... (Attempt {attempt + 1}/{max_retries})")
+                    time.sleep(wait_time)
+                else:
+                    raise retry_error  # Re-raise if not throttling or max retries reached
         
         output = response['output']['text']
         
