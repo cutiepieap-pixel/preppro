@@ -154,9 +154,10 @@ st.title("🧪 PrepPro Application")
 st.markdown("Welcome to PrepPro - Your AI-powered knowledge base assistant")
 st.markdown("---")
 
-# CHAT SECTION
+# CHAT SECTION  
 st.header("💬 Knowledge Base Chat")
 st.markdown("Ask questions and get answers from our knowledge base powered by AWS Bedrock.")
+st.markdown("**Note:** The input box is embedded below - no chat input at the bottom of the page!")
 
 # Initialize chat history in session state
 if 'chat_history' not in st.session_state:
