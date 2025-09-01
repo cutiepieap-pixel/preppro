@@ -165,14 +165,27 @@ if 'chat_history' not in st.session_state:
 # Create a container for the chat interface
 with st.container():
     st.subheader("💭 Ask Your Question")
-    st.markdown("Type your question in the chat box below and press Enter to get an AI-powered answer:")
+    st.markdown("Type your question below and click 'Send' or press Ctrl+Enter:")
     
-    # Chat input with clear instructions
-    input_text = st.chat_input("💬 Type your question here and press Enter...")
-
-    if input_text:
-        # Call the chat function
-        chat_with_kb(message_history=st.session_state.chat_history, new_text=input_text)
+    # Create form for better UX
+    with st.form("chat_form", clear_on_submit=True):
+        col1, col2 = st.columns([4, 1])
+        
+        with col1:
+            input_text = st.text_area(
+                "Your Question:",
+                placeholder="💬 Type your question here...",
+                height=100,
+                label_visibility="collapsed"
+            )
+        
+        with col2:
+            st.write("")  # Add some spacing
+            submit_button = st.form_submit_button("📤 Send", use_container_width=True)
+        
+        if submit_button and input_text.strip():
+            # Call the chat function
+            chat_with_kb(message_history=st.session_state.chat_history, new_text=input_text.strip())
 
 # Chat history section
 if st.session_state.chat_history:
