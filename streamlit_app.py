@@ -33,7 +33,7 @@ def chat_with_kb(message_history, new_text=None):
         pass
     
     aws_region = os.getenv("AWS_REGION", "us-east-1")
-    kbId = os.getenv("KB_ID")
+    kbId = os.getenv("KB_ID", "your-knowledge-base-id-here")  # Replace with your actual KB ID
     
     if not kbId:
         st.error(f"KB_ID environment variable is not set. Please configure your AWS credentials and KB_ID.")
@@ -42,7 +42,7 @@ def chat_with_kb(message_history, new_text=None):
     try:
         bedrock = boto3.client('bedrock-agent-runtime', region_name=aws_region)
         
-        llm_model = "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-5-sonnet-20240620-v1:0"
+        llm_model = "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-5-sonnet-20241022-v2:0"
         chunk = 5
         
         prompt = '''You are a question answering agent. 
@@ -127,18 +127,18 @@ st.markdown("---")
 st.header("💬 Knowledge Base Chat")
 st.markdown("Ask questions and get answers from our knowledge base powered by AWS Bedrock.")
 
-# Initialize chat history in session state (matching your localhost code)
+# Initialize chat history in session state
 if 'chat_history' not in st.session_state:
     st.session_state.chat_history = []
 
-# Chat input (matching your localhost code)
+# Chat input
 input_text = st.chat_input("Chat with your bot here")
 
 if input_text:
-    # Call the chat function (matching your localhost code)
+    # Call the chat function
     chat_with_kb(message_history=st.session_state.chat_history, new_text=input_text)
 
-# Render chat history (matching your localhost code)
+# Render chat history
 for message in st.session_state.chat_history:
     with st.chat_message(message.role):
         st.markdown(message.text)
@@ -149,13 +149,6 @@ with col1:
     if st.button("🗑️ Clear Chat"):
         st.session_state.chat_history = []
         st.rerun()
-
-# Configuration info
-with st.expander("ℹ️ Configuration Info"):
-    st.write("**AWS Region:**", os.getenv("AWS_REGION", "us-east-1"))
-    st.write("**KB ID:**", os.getenv("KB_ID", "Not configured"))
-    if not os.getenv("KB_ID"):
-        st.warning("⚠️ Knowledge Base ID (KB_ID) is not configured. Please set up your environment variables.")
 
 st.markdown("---")
 
@@ -168,23 +161,21 @@ st.markdown("""
 **Please read this disclaimer carefully before using this application.**
 
 #### Usage Terms
-- This application is provided for educational and demonstration purposes only
-- Users are responsible for ensuring compliance with applicable laws and regulations
-- The application may contain experimental features that are subject to change
+- THIS WAS CREATED JUST FOR LEARNING PURPOSES, DO NOT USE FOR ANY SENSITIVE OR CONFIDENTIAL DATA THAT CANNOT BE SHARED WITH THE PUBLIC.
 
-#### Data Privacy
-- We do not store personal information beyond the current session
-- Any data entered is processed temporarily and not permanently stored
-- Users should not enter sensitive or confidential information
+Hello candidates!
 
-#### Limitations
-- This application is provided "as is" without warranties of any kind
-- We are not responsible for any decisions made based on the application's output
-- Results should be verified independently before making important decisions
+My name is PrepPro, your AI assistant designed to help you succeed at Amazon Web Services Loop Interviews.
 
-#### Contact
-- For questions or concerns, please contact the development team
-- Report any issues or bugs through the appropriate channels
+I understand that the Loop interview process at AWS can be quite challenging, which is why I'm here to provide you with guidance and support. My goal is to ensure you are well-prepared and confident going into your interviews.
+
+I have in-depth knowledge of the core Leadership Principles that AWS looks for. I can help you craft compelling Situation, Task, Action, Result (STAR) examples that demonstrate how you embody these principles through real-life experiences.
+
+Additionally, I'm well-versed in the different question types you may encounter, such as behavioral, situational, and case study questions. I can provide tips on how to structure your responses, what to emphasize, and how to effectively communicate your thought process.
+
+So let's get started! I'm excited to work with you and help you put your best foot forward. Don't hesitate to ask me any questions you may have.
+
+DISCLAIMER: I'm an AI assistant unaffiliated with Amazon Web Services (AWS). My responses are for practice only, not reflecting AWS's actual interviews. AWS isn't responsible for interview outcomes based on my information. Verify through official AWS resources. Use this exercise cautiously and do not solely rely on my responses for AWS or other interviews. Please do not share any personal or confidential data with the chatbot to ensure your data privacy.
 
 **By using this application, you acknowledge that you have read and understood this disclaimer.**
 """)
@@ -195,11 +186,6 @@ st.markdown("---")
 st.header("❓ Frequently Asked Questions")
 
 # FAQ Section with expandable items
-with st.expander("🔍 What is PrepPro?"):
-    st.write("""
-    PrepPro is a demonstration application built with Streamlit. It showcases various 
-    features and capabilities for educational purposes.
-    """)
 
 with st.expander("🚀 How do I get started?"):
     st.write("""
@@ -215,28 +201,10 @@ with st.expander("💾 Is my data saved?"):
     All information is processed in real-time and cleared when you close the session.
     """)
 
-with st.expander("🔧 What technologies are used?"):
-    st.write("""
-    - **Frontend**: Streamlit
-    - **Backend**: Python
-    - **AI**: AWS Bedrock with Claude 3.5 Sonnet
-    - **Knowledge Base**: AWS Bedrock Knowledge Base
-    - **Hosting**: Streamlit Community Cloud
-    - **Version Control**: GitHub
-    """)
-
 with st.expander("📱 Is this mobile-friendly?"):
     st.write("""
     Yes! Streamlit applications are responsive and work well on mobile devices, 
     tablets, and desktop computers.
-    """)
-
-with st.expander("🐛 How do I report bugs?"):
-    st.write("""
-    If you encounter any issues:
-    1. Note the steps that led to the problem
-    2. Take a screenshot if possible
-    3. Contact the development team with details
     """)
 
 with st.expander("🔄 How often is this updated?"):
