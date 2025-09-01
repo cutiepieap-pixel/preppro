@@ -142,41 +142,25 @@ elif page == "Knowledge Base Chat":
     st.header("💬 Knowledge Base Chat")
     st.markdown("Ask questions and get answers from our knowledge base powered by AWS Bedrock.")
     
-    # Initialize chat history in session state
-    if "chat_messages" not in st.session_state:
-        st.session_state.chat_messages = []
+    # Initialize chat history in session state (matching your localhost code)
+    if 'chat_history' not in st.session_state:
+        st.session_state.chat_history = []
     
-    # Display chat history
-    chat_container = st.container()
+    # Chat input (matching your localhost code)
+    input_text = st.chat_input("Chat with your bot here")
     
-    with chat_container:
-        for i, message in enumerate(st.session_state.chat_messages):
-            if message.role == "user":
-                with st.chat_message("user"):
-                    st.write(message.text)
-            else:
-                with st.chat_message("assistant"):
-                    st.write(message.text)
+    if input_text:
+        # Call the chat function (matching your localhost code)
+        chat_with_kb(message_history=st.session_state.chat_history, new_text=input_text)
     
-    # Chat input
-    if prompt := st.chat_input("Ask me anything about our knowledge base..."):
-        # Add user message to chat history
-        with st.chat_message("user"):
-            st.write(prompt)
-        
-        # Get response from knowledge base
-        with st.chat_message("assistant"):
-            with st.spinner("Thinking..."):
-                try:
-                    response = chat_with_kb(st.session_state.chat_messages, prompt)
-                    st.write(response)
-                except Exception as e:
-                    error_msg = f"Sorry, I encountered an error: {str(e)}"
-                    st.error(error_msg)
+    # Render chat history (matching your localhost code)
+    for message in st.session_state.chat_history:
+        with st.chat_message(message.role):
+            st.markdown(message.text)
     
     # Clear chat button
     if st.button("🗑️ Clear Chat History"):
-        st.session_state.chat_messages = []
+        st.session_state.chat_history = []
         st.rerun()
     
     # Configuration info
