@@ -157,7 +157,6 @@ st.markdown("---")
 # CHAT SECTION  
 st.header("💬 Knowledge Base Chat")
 st.markdown("Ask questions and get answers from our knowledge base powered by AWS Bedrock.")
-st.markdown("**Note:** The input box is embedded below - no chat input at the bottom of the page!")
 
 # Initialize chat history in session state
 if 'chat_history' not in st.session_state:
@@ -220,8 +219,8 @@ st.markdown("""
 
 **Please read this disclaimer carefully before using this application.**
 
-#### Usage Terms
-- THIS WAS CREATED JUST FOR LEARNING PURPOSES, DO NOT USE FOR ANY SENSITIVE OR CONFIDENTIAL DATA THAT CANNOT BE SHARED WITH THE PUBLIC.
+#### ABOUT PREPPRO
+PREPPRO WAS CREATED JUST FOR LEARNING PURPOSES, DO NOT USE FOR ANY SENSITIVE OR CONFIDENTIAL DATA THAT CANNOT BE SHARED WITH THE PUBLIC.
 
 Hello candidates!
 
