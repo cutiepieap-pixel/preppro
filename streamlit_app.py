@@ -143,7 +143,7 @@ def chat_with_kb(message_history, new_text=None):
 
 # Page configuration
 st.set_page_config(
-    page_title="PrepPro"
+    page_title="PrepPro",
     page_icon="🧪",
     layout="wide",
     initial_sidebar_state="expanded"
