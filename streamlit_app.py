@@ -156,7 +156,28 @@ st.markdown("---")
 
 # CHAT SECTION  
 st.header("💬 Chat with PrepPro")
-st.markdown("Ask questions and get answers from our knowledge base powered by AWS Bedrock.")
+st.markdown("""
+⚠️ **Disclaimer**  
+PREPPRO WAS CREATED FOR LEARNING PURPOSES ONLY.  
+Do **not** use this tool for any sensitive, confidential, or proprietary information.  
+All inputs may be treated as non-confidential and publicly shareable.  
+
+---
+""")
+st.markdown("""
+Hello candidates! 👋  
+
+My name is **PrepPro**, your AI assistant designed to help you succeed at **Amazon Web Services Loop Interviews**.  
+
+I understand that the Loop interview process at AWS can be quite challenging, which is why I'm here to provide you with guidance and support. My goal is to ensure you are well-prepared and confident going into your interviews.  
+
+I have in-depth knowledge of the **Leadership Principles** that AWS looks for. I can help you craft compelling **Situation–Task–Action–Result (STAR)** examples that demonstrate how you embody these principles through real-life experiences.  
+
+Additionally, I’m well-versed in the different question types you may encounter — such as **behavioral, situational, and case study questions**. I can provide tips on how to structure your responses, what to emphasize, and how to effectively communicate your thought process.  
+
+So let’s get started! I’m excited to work with you and help you put your best foot forward. 🚀  
+""")
+
 
 # Initialize chat history in session state
 if 'chat_history' not in st.session_state:
@@ -218,21 +239,6 @@ st.markdown("""
 ### Important Notice
 
 **Please read this disclaimer carefully before using this application.**
-
-#### ABOUT PREPPRO
-PREPPRO WAS CREATED JUST FOR LEARNING PURPOSES, DO NOT USE FOR ANY SENSITIVE OR CONFIDENTIAL DATA THAT CANNOT BE SHARED WITH THE PUBLIC.
-
-Hello candidates!
-
-My name is PrepPro, your AI assistant designed to help you succeed at Amazon Web Services Loop Interviews.
-
-I understand that the Loop interview process at AWS can be quite challenging, which is why I'm here to provide you with guidance and support. My goal is to ensure you are well-prepared and confident going into your interviews.
-
-I have in-depth knowledge of the core Leadership Principles that AWS looks for. I can help you craft compelling Situation, Task, Action, Result (STAR) examples that demonstrate how you embody these principles through real-life experiences.
-
-Additionally, I'm well-versed in the different question types you may encounter, such as behavioral, situational, and case study questions. I can provide tips on how to structure your responses, what to emphasize, and how to effectively communicate your thought process.
-
-So let's get started! I'm excited to work with you and help you put your best foot forward. Don't hesitate to ask me any questions you may have.
 
 DISCLAIMER: I'm an AI assistant unaffiliated with Amazon Web Services (AWS). My responses are for practice only, not reflecting AWS's actual interviews. AWS isn't responsible for interview outcomes based on my information. Verify through official AWS resources. Use this exercise cautiously and do not solely rely on my responses for AWS or other interviews. Please do not share any personal or confidential data with the chatbot to ensure your data privacy.
 
